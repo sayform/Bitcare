@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import bitcare.com.br.bitcare.teste.sptrans.Util;
-
 /**
  * Created by Felipe on 08/10/2016.
  */
@@ -28,15 +26,15 @@ import bitcare.com.br.bitcare.teste.sptrans.Util;
 public class LoginTask extends AsyncTask<String, Void, String> {
 
     private Activity activity;
-    private boolean sucesso;
+    private String sucessoChamada;
 
     /**
      * Construtor padrao da classe
      *
      * @param activity
      */
-    public LoginTask(boolean resultado, Activity activity) {
-        this.sucesso = resultado;
+    public LoginTask(String sucessoChamada, Activity activity) {
+        this.sucessoChamada = sucessoChamada;
         this.activity = activity;
     }
 
@@ -49,6 +47,8 @@ public class LoginTask extends AsyncTask<String, Void, String> {
      */
     @Override
     protected String doInBackground(String... params) {
+
+        sucessoChamada = null;
 
         String urlServico = params[0];
         String login = params[1];
@@ -81,21 +81,9 @@ public class LoginTask extends AsyncTask<String, Void, String> {
             e.printStackTrace();
         }
 
+        sucessoChamada = "ok";
+
         return "ok";
-
-    }
-
-
-    @Override
-    protected void onPostExecute(String paramDoInBackground) {
-
-        sucesso = true;
-
-        Log.i("RETORNO EXECUTE", paramDoInBackground);
-
-        if (paramDoInBackground == null) {
-            sucesso = false;
-        }
 
     }
 

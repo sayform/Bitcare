@@ -40,12 +40,19 @@ public class LoginActivity extends AppCompatActivity {
         String loginText = login.getText().toString();
         String senhaText = login.getText().toString();
 
-        LoginTask loginTask = new LoginTask(false, this);
-        loginTask.execute(urlLogin, loginText, senhaText);
+        String sucessoChamada = "";
+
+        LoginTask loginTask = new LoginTask(sucessoChamada, this);
+        loginTask.execute(urlLogin, loginText, senhaText, sucessoChamada);
 
 
-        Intent toBpmActivity = new Intent(this, BpmActivity.class);
-        startActivity(toBpmActivity);
+        if (sucessoChamada != null) {
+            Intent toBpmActivity = new Intent(this, BpmActivity.class);
+            startActivity(toBpmActivity);
+        } else {
+            Toast.makeText(this, "Erro ao logar no sistema",Toast.LENGTH_LONG).show();
+        }
+
 
     }
 
