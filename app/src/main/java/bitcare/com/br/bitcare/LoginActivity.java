@@ -5,6 +5,11 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class LoginActivity extends AppCompatActivity {
 
     @Override
@@ -22,7 +27,17 @@ public class LoginActivity extends AppCompatActivity {
 
     public void logar() {
 
+        try {
 
+            URL url = new URL("https://bitcare-141317.appspot.com/login/autenticacao");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
     }
