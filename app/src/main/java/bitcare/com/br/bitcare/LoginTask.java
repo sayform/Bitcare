@@ -4,13 +4,19 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import bitcare.com.br.bitcare.teste.sptrans.Util;
@@ -21,13 +27,32 @@ import bitcare.com.br.bitcare.teste.sptrans.Util;
 
 public class LoginTask extends AsyncTask<String, Void, String> {
 
+    private Activity activity;
+    private boolean sucesso;
+
+    /**
+     * Construtor padrao da classe
+     *
+     * @param activity
+     */
+    public LoginTask(boolean resultado, Activity activity) {
+        this.sucesso = resultado;
+        this.activity = activity;
+    }
+
+
+
+    /**
+     *
+     * @param params
+     * @return
+     */
     @Override
     protected String doInBackground(String... params) {
 
         String urlServico = params[0];
         String login = params[1];
         String senha = params[2];
-
 
         try {
 
@@ -49,7 +74,7 @@ public class LoginTask extends AsyncTask<String, Void, String> {
             Log.i("RESPONSE", String.valueOf(conn.getResponseCode()));
 
             if (conn.getResponseCode() != 200) {
-                throw new RuntimeException("Erro ao fazer login");
+                return null;
             }
 
         } catch (Exception e) {
@@ -59,5 +84,20 @@ public class LoginTask extends AsyncTask<String, Void, String> {
         return "ok";
 
     }
+
+
+    @Override
+    protected void onPostExecute(String paramDoInBackground) {
+
+        sucesso = true;
+
+        Log.i("RETORNO EXECUTE", paramDoInBackground);
+
+        if (paramDoInBackground == null) {
+            sucesso = false;
+        }
+
+    }
+
 
 }
