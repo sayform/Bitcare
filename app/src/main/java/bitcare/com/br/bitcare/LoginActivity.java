@@ -23,25 +23,34 @@ public class LoginActivity extends AppCompatActivity {
     private EditText login;
     private EditText senha;
 
+    private String urlLogin = "https://bitcare-141317.appspot.com/login/autenticacao";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         login = (EditText) findViewById(R.id.fieldLogin);
         senha = (EditText) findViewById(R.id.fieldPassword);
+
     }
 
+    public void logar(View view) {
 
-    public void toBpm(View view) {
+        String loginText = login.getText().toString();
+        String senhaText = login.getText().toString();
 
-        logar();
+        LoginTask loginTask = new LoginTask();
+        loginTask.execute(urlLogin, loginText, senhaText);
 
         Intent toBpmActivity = new Intent(this, BpmActivity.class);
         startActivity(toBpmActivity);
+
     }
 
 
-    public void logar() {
+
+ /*   public void logar() {
 
         try {
 
@@ -81,7 +90,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
 
-    }
+    }*/
 
 
 

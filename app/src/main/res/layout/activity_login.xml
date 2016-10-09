@@ -92,7 +92,7 @@
         android:layout_marginTop="36dp"
         android:id="@+id/btnLogin"
         android:textColor="@color/colorPrimary"
-        android:onClick="toBpm" />
+        android:onClick="logar" />
 
     <ImageView
         android:layout_width="wrap_content"
