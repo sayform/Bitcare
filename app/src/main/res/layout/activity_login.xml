@@ -91,7 +91,8 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="36dp"
         android:id="@+id/btnLogin"
-        android:textColor="@color/colorPrimary"/>
+        android:textColor="@color/colorPrimary"
+        android:onClick="toBpm" />
 
     <ImageView
         android:layout_width="wrap_content"
