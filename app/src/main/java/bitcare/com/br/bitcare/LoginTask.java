@@ -26,15 +26,13 @@ import java.util.logging.Logger;
 public class LoginTask extends AsyncTask<String, Void, String> {
 
     private Activity activity;
-    private String sucessoChamada;
 
     /**
      * Construtor padrao da classe
      *
      * @param activity
      */
-    public LoginTask(String sucessoChamada, Activity activity) {
-        this.sucessoChamada = sucessoChamada;
+    public LoginTask(Activity activity) {
         this.activity = activity;
     }
 
@@ -47,8 +45,6 @@ public class LoginTask extends AsyncTask<String, Void, String> {
      */
     @Override
     protected String doInBackground(String... params) {
-
-        sucessoChamada = null;
 
         String urlServico = params[0];
         String login = params[1];
@@ -81,11 +77,21 @@ public class LoginTask extends AsyncTask<String, Void, String> {
             e.printStackTrace();
         }
 
-        sucessoChamada = "ok";
-
         return "ok";
 
     }
 
+    @Override
+    protected void onPostExecute(String s) {
 
+        if (s != null) {
+            Intent toBpmActivity = new Intent(activity, BpmActivity.class);
+            activity.startActivity(toBpmActivity);
+        } else {
+            Toast.makeText(activity, "Login incorreto", Toast.LENGTH_LONG).show();
+        }
+
+
+
+    }
 }
