@@ -7,4 +7,5 @@
     <string name="strBtnLogin">Entrar</string>
     <string name="strSenha">Senha</string>
     <string name="strUsuario">Usuário</string>
+    <string name="txtErroLogin" />
 </resources>
