@@ -40,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     public void logar(View view) {
 
         String loginText = login.getText().toString();
-        String senhaText = login.getText().toString();
+        String senhaText = senha.getText().toString();
 
         LoginTask loginTask = new LoginTask(this);
         loginTask.execute(urlLogin, loginText, senhaText);

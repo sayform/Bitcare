@@ -50,12 +50,13 @@ public class LoginTask extends AsyncTask<String, Void, String> {
         String login = params[1];
         String senha = params[2];
 
+        String retorno = null;
+
         try {
 
             URL url = new URL(urlServico);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-
 
             //Define que os dados serao enviados no corpo da mensagem (padrao post)
             conn.setDoOutput(true);
@@ -70,21 +71,23 @@ public class LoginTask extends AsyncTask<String, Void, String> {
             Log.i("RESPONSE", String.valueOf(conn.getResponseCode()));
 
             if (conn.getResponseCode() != 200) {
-                return null;
+                retorno = "erro";
+            } else {
+                retorno = "ok";
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return "ok";
+        return retorno;
 
     }
 
     @Override
     protected void onPostExecute(String s) {
 
-        if (s != null) {
+        if (s.equals("ok")) {
             Intent toBpmActivity = new Intent(activity, BpmActivity.class);
             activity.startActivity(toBpmActivity);
         } else {
