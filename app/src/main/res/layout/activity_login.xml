@@ -115,4 +115,13 @@
         android:textColor="@android:color/background_light"
         android:text="@string/txtErroLogin" />
 
+    <ProgressBar
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/btnLogin"
+        android:layout_toEndOf="@+id/btnLogin"
+        android:layout_marginStart="17dp"
+        android:id="@+id/pbLogin" />
+
 </RelativeLayout>

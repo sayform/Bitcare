@@ -6,8 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
 
 import bitcare.com.br.bitcare.interfaces.LoginEndpointService;
 import bitcare.com.br.bitcare.models.LoginRequest;
@@ -26,18 +29,21 @@ public class LoginActivity extends AppCompatActivity {
     private EditText senha;
     private TextView txtErroLogin;
 
+    private ProgressBar progressBar;
+
     private int httpStatusCode = 0;
-
-    private String urlLogin = "https://bitcare-141317.appspot.com/login/autenticacao";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
         login = (EditText) findViewById(R.id.fieldLogin);
         senha = (EditText) findViewById(R.id.fieldPassword);
         txtErroLogin = (TextView) findViewById(R.id.txtErroLogin);
+        progressBar = (ProgressBar) findViewById(R.id.pbLogin);
+
+        progressBar.setVisibility(View.GONE);
 
     }
 
@@ -59,6 +65,8 @@ public class LoginActivity extends AppCompatActivity {
      */
     public void logar(View view) {
 
+        progressBar.setVisibility(View.VISIBLE);
+
         String loginText = login.getText().toString();
         String senhaText = senha.getText().toString();
 
@@ -74,27 +82,42 @@ public class LoginActivity extends AppCompatActivity {
         LoginEndpointService service = retrofit.create(LoginEndpointService.class);
         Call<Void> endpointLogin = service.logar(login);
 
-
         endpointLogin.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
+
                 httpStatusCode = response.code();
                 Log.i("LOGIN_ACTIVITY","onResponse " + httpStatusCode);
+
+                progressBar.setVisibility(View.GONE);
+
+                if (httpStatusCode == 200) {
+                    chamarBpmActivity();
+                } else {
+                    txtErroLogin.setText("Login inexistente.");
+                }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 Log.e("LOGIN_ACTIVITY", "Erro: " + t.getMessage());
+                progressBar.setVisibility(View.GONE);
+                txtErroLogin.setText("Ocorreu um erro no sistema. Tente novamente.");
             }
         });
 
-        if (httpStatusCode != 200) {
-            txtErroLogin.setText("Login inexistente");
-        } else {
-            Intent toBpmActivity = new Intent(this, BpmActivity.class);
-            startActivity(toBpmActivity);
-        }
+
 
     }
+
+    /**
+     * Metodo privado que navega para a Activity de BPM
+     */
+    private void chamarBpmActivity() {
+        Intent toBpmActivity = new Intent(this, BpmActivity.class);
+        startActivity(toBpmActivity);
+    }
+
+
 
 }
