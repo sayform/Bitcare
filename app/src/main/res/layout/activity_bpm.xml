@@ -104,8 +104,8 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/layBpm"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/lstBpm"/>
+        android:id="@+id/lstBpm"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>
