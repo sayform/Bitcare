@@ -36,8 +36,6 @@ public class LoginTask extends AsyncTask<String, Void, String> {
         this.activity = activity;
     }
 
-
-
     /**
      *
      * @param params
@@ -68,8 +66,6 @@ public class LoginTask extends AsyncTask<String, Void, String> {
 
             out.writeBytes(dadosLogin.toString());
 
-            Log.i("RESPONSE", String.valueOf(conn.getResponseCode()));
-
             if (conn.getResponseCode() != 200) {
                 retorno = "erro";
             } else {
@@ -87,12 +83,15 @@ public class LoginTask extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String s) {
 
+        Intent toBpmActivity = new Intent(activity, BpmActivity.class);
+        activity.startActivity(toBpmActivity);
+/*
+
         if (s.equals("ok")) {
-            Intent toBpmActivity = new Intent(activity, BpmActivity.class);
-            activity.startActivity(toBpmActivity);
         } else {
             Toast.makeText(activity, "Login incorreto", Toast.LENGTH_LONG).show();
         }
+*/
 
 
 

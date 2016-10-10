@@ -45,11 +45,6 @@ public class LoginActivity extends AppCompatActivity {
         LoginTask loginTask = new LoginTask(this);
         loginTask.execute(urlLogin, loginText, senhaText);
 
-      /*
-        Intent toBpmActivity = new Intent(this, BpmActivity.class);
-        startActivity(toBpmActivity);
-        */
-
     }
 
 
