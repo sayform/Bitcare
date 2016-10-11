@@ -113,6 +113,7 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void chamarBpmActivity() {
         Intent toBpmActivity = new Intent(this, BpmActivity.class);
+        toBpmActivity.putExtra("login",login.getText().toString());
         startActivity(toBpmActivity);
     }
 

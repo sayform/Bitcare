@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_estatistica"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:textAlignment="textEnd"
+    tools:context="bitcare.com.br.bitcare.BpmActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="0dp"
+        android:orientation="horizontal"
+        android:padding="0dp"
+        tools:ignore="ExtraText"
+        android:id="@+id/ltRodape">
+
+        <Button
+            android:id="@+id/btnEstatistica"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawableTop="@drawable/ic_chart_bar"
+            android:text="@string/strEstatistica"
+            android:textAllCaps="false"
+            tools:ignore="ButtonStyle"
+            android:backgroundTint="@color/colorPrimary" />
+
+        <Button
+            android:id="@+id/btnBpm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawableTint="@android:color/background_light"
+            android:drawableTop="@drawable/ic_heart"
+            android:text="@string/strBpm"
+            android:textAllCaps="false"
+            android:textColor="@android:color/background_light"
+            tools:ignore="ButtonStyle" />
+
+        <Button
+            android:id="@+id/btnMedicamento"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".3"
+            android:drawableTop="@drawable/ic_pill"
+            android:text="@string/srtMedicamento"
+            android:textAllCaps="false"
+            tools:ignore="ButtonStyle" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="128dp"
+        android:layout_above="@+id/linearLayout3"
+        android:layout_height="wrap_content"
+        android:id="@+id/ltBody">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="600px"
+            android:layout_weight="1">
+
+            <ListView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/lstEstatisticas" />
+        </ScrollView>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="bpm"
+        android:textAlignment="viewStart"
+        android:textSize="36sp"
+        android:textStyle="normal"
+        tools:ignore="HardcodedText"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp" />
+
+</RelativeLayout>

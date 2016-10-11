@@ -1,5 +1,6 @@
 package bitcare.com.br.bitcare;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
@@ -21,6 +22,7 @@ import bitcare.com.br.bitcare.entities.Pulsacao;
 import bitcare.com.br.bitcare.interfaces.PulsacaoEndpointService;
 import bitcare.com.br.bitcare.models.PulsacaoDTO;
 import bitcare.com.br.bitcare.utils.ConexaoStatusUtil;
+import bitcare.com.br.bitcare.utils.ConstantesUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -29,15 +31,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class BpmActivity extends AppCompatActivity {
 
-    public static final String BLUETOOTH_MAC_ADDRESS = "20:16:06:28:08:99";
-    public static final String LOGIN = "felipe";
+    public static final String BLUETOOTH_MAC_ADDRESS = ConstantesUtils.BLUETOOTH_MAC_ADDRESS;
+
+    private String login;
 
     BluetoothSPP bt;
     TextView txtValorBpm;
     ListView lstBpm;
 
     final PulsacaoEndpointService pulsacaoService =  new Retrofit.Builder()
-                                                                .baseUrl("https://bitcare-141317.appspot.com/")
+                                                                .baseUrl(ConstantesUtils.BASE_URL)
                                                                 .addConverterFactory(GsonConverterFactory.create())
                                                                 .build()
                                                                 .create(PulsacaoEndpointService.class);
@@ -57,6 +60,10 @@ public class BpmActivity extends AppCompatActivity {
 
         txtValorBpm = (TextView) findViewById(R.id.txtValorBpm);
         lstBpm = (ListView) findViewById(R.id.lstBpm);
+
+        //Recebe o login da activity de login
+        Bundle bundle = getIntent().getExtras();
+        login = bundle.getString("login");
 
 
         // Inicializa o serviço do JodaTime para Android
@@ -94,7 +101,7 @@ public class BpmActivity extends AppCompatActivity {
                         registrarPulsacao(mediaBpms, horaFormatada);
 
                     } else {
-                        //Pulsacao pulsacaoEntity = new Pulsacao(LOGIN, mediaBpms, horaFormatada);
+                        //Pulsacao pulsacaoEntity = new Pulsacao(login, mediaBpms, horaFormatada);
                         //pulsacaoEntity.save();
                     }
                 }
@@ -113,6 +120,7 @@ public class BpmActivity extends AppCompatActivity {
 
     }
 
+
     private Long extrairMediaBpms() {
         // pega a soma dos BPMs para tirar a média
         Long somaBpms = 0L;
@@ -125,7 +133,7 @@ public class BpmActivity extends AppCompatActivity {
     }
 
 //    private void registrarPulsacoesBanco() {
-//        List<Pulsacao> pulsacoesEntity = Pulsacao.find(Pulsacao.class, "login = ?", LOGIN);
+//        List<Pulsacao> pulsacoesEntity = Pulsacao.find(Pulsacao.class, "login = ?", login);
 //        if(pulsacoesEntity != null && !pulsacoesEntity.isEmpty()) {
 //            for (Pulsacao pulsacaoItem : pulsacoesEntity) {
 //                registrarPulsacao(pulsacaoItem.valor, pulsacaoItem.hora);
@@ -136,7 +144,7 @@ public class BpmActivity extends AppCompatActivity {
     private PulsacaoDTO registrarPulsacao(Long pulsacao, String hora) {
         PulsacaoDTO dto = new PulsacaoDTO();
         dto.setValor(pulsacao);
-        dto.setLogin(LOGIN);
+        dto.setLogin(login);
         dto.setHora(hora);
 
         Call<Void> pulsacaoDTOCall = pulsacaoService.registrar(dto);
@@ -157,7 +165,7 @@ public class BpmActivity extends AppCompatActivity {
     }
 
     private void montarListaBpms() {
-        pulsacaoService.buscar(LOGIN, 6L).enqueue(new Callback<List<PulsacaoDTO>>() {
+        pulsacaoService.buscar(login, 6L).enqueue(new Callback<List<PulsacaoDTO>>() {
             @Override
             public void onResponse(Call<List<PulsacaoDTO>> call, Response<List<PulsacaoDTO>> response) {
                 ultimasPulsacoes = response.body();
