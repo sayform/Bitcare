@@ -2,6 +2,8 @@ package bitcare.com.br.bitcare;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import net.danlew.android.joda.JodaTimeAndroid;
@@ -32,16 +34,19 @@ public class BpmActivity extends AppCompatActivity {
 
     BluetoothSPP bt;
     TextView txtValorBpm;
+    ListView lstBpm;
 
     final PulsacaoEndpointService pulsacaoService =  new Retrofit.Builder()
-                                                        .baseUrl("http://177.189.64.217:9090/")//"https://bitcare-141317.appspot.com/")
-                                                        .addConverterFactory(GsonConverterFactory.create())
-                                                        .build()
-                                                        .create(PulsacaoEndpointService.class);
+                                                                .baseUrl("https://bitcare-141317.appspot.com/")
+                                                                .addConverterFactory(GsonConverterFactory.create())
+                                                                .build()
+                                                                .create(PulsacaoEndpointService.class);
 
     boolean conectado;
 
     // Utilizado para gerenciar as médias de BPMs para enviar para a API
+    List<PulsacaoDTO> ultimasPulsacoes = new ArrayList<>();
+    ArrayAdapter<PulsacaoDTO> pulsacaoDTOArrayAdapter;
     List<Long> bpmsTemp = new ArrayList<>();
     DateTime ultimoRegistro = null;
 
@@ -51,10 +56,17 @@ public class BpmActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bpm);
 
         txtValorBpm = (TextView) findViewById(R.id.txtValorBpm);
+        lstBpm = (ListView) findViewById(R.id.lstBpm);
+
 
         // Inicializa o serviço do JodaTime para Android
         JodaTimeAndroid.init(this);
         ultimoRegistro = DateTime.now();
+
+        pulsacaoDTOArrayAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_1, ultimasPulsacoes);
+
+        montarListaBpms();
 
         bt = new BluetoothSPP(this);
 
@@ -68,8 +80,9 @@ public class BpmActivity extends AppCompatActivity {
                 bpmsTemp.add(Long.valueOf(bpm));
 
                 // Verifica se passaram alguns segundos desde o último registro para manter uma média coerente
-                if(DateTime.now().isAfter(ultimoRegistro.plusSeconds(5))) {
+                if(DateTime.now().isAfter(ultimoRegistro.plusSeconds(2))) {
                     String horaFormatada = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss").print(DateTime.now());
+                    ultimoRegistro = DateTime.now();
 
                     Long mediaBpms = extrairMediaBpms();
 
@@ -80,7 +93,6 @@ public class BpmActivity extends AppCompatActivity {
                         //registrarPulsacoesBanco();
                         registrarPulsacao(mediaBpms, horaFormatada);
 
-                        ultimoRegistro = DateTime.now();
                     } else {
                         //Pulsacao pulsacaoEntity = new Pulsacao(LOGIN, mediaBpms, horaFormatada);
                         //pulsacaoEntity.save();
@@ -112,14 +124,14 @@ public class BpmActivity extends AppCompatActivity {
         return somaBpms / bpmsTemp.size();
     }
 
-    private void registrarPulsacoesBanco() {
-        List<Pulsacao> pulsacoesEntity = Pulsacao.find(Pulsacao.class, "login = ?", LOGIN);
-        if(pulsacoesEntity != null && !pulsacoesEntity.isEmpty()) {
-            for (Pulsacao pulsacaoItem : pulsacoesEntity) {
-                registrarPulsacao(pulsacaoItem.valor, pulsacaoItem.hora);
-            }
-        }
-    }
+//    private void registrarPulsacoesBanco() {
+//        List<Pulsacao> pulsacoesEntity = Pulsacao.find(Pulsacao.class, "login = ?", LOGIN);
+//        if(pulsacoesEntity != null && !pulsacoesEntity.isEmpty()) {
+//            for (Pulsacao pulsacaoItem : pulsacoesEntity) {
+//                registrarPulsacao(pulsacaoItem.valor, pulsacaoItem.hora);
+//            }
+//        }
+//    }
 
     private PulsacaoDTO registrarPulsacao(Long pulsacao, String hora) {
         PulsacaoDTO dto = new PulsacaoDTO();
@@ -132,6 +144,7 @@ public class BpmActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 System.out.println("Pulsação registrada com sucesso. " + response.message() + " / " + response.code());
+                montarListaBpms();
             }
 
             @Override
@@ -141,6 +154,26 @@ public class BpmActivity extends AppCompatActivity {
         });
 
         return dto;
+    }
+
+    private void montarListaBpms() {
+        pulsacaoService.buscar(LOGIN, 6L).enqueue(new Callback<List<PulsacaoDTO>>() {
+            @Override
+            public void onResponse(Call<List<PulsacaoDTO>> call, Response<List<PulsacaoDTO>> response) {
+                ultimasPulsacoes = response.body();
+
+                pulsacaoDTOArrayAdapter.clear();
+                pulsacaoDTOArrayAdapter.addAll(ultimasPulsacoes);
+
+                lstBpm.setAdapter(pulsacaoDTOArrayAdapter);
+            }
+
+            @Override
+            public void onFailure(Call<List<PulsacaoDTO>> call, Throwable t) {
+                System.out.println("não foi possível buscar as pulsações");
+                ultimasPulsacoes = new ArrayList<>();
+            }
+        });
     }
 
 }
