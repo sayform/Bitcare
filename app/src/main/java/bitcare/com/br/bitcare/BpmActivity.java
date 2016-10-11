@@ -15,8 +15,9 @@ import java.util.List;
 
 import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
+import bitcare.com.br.bitcare.entities.Pulsacao;
 import bitcare.com.br.bitcare.interfaces.PulsacaoEndpointService;
-import bitcare.com.br.bitcare.models.PulsacaoRequest;
+import bitcare.com.br.bitcare.models.PulsacaoDTO;
 import bitcare.com.br.bitcare.utils.ConexaoStatusUtil;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -27,6 +28,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class BpmActivity extends AppCompatActivity {
 
     public static final String BLUETOOTH_MAC_ADDRESS = "20:16:06:28:08:99";
+    public static final String LOGIN = "felipe";
 
     BluetoothSPP bt;
     TextView txtValorBpm;
@@ -41,17 +43,18 @@ public class BpmActivity extends AppCompatActivity {
 
     // Utilizado para gerenciar as médias de BPMs para enviar para a API
     List<Long> bpmsTemp = new ArrayList<>();
-    DateTime ultimoRegistro = DateTime.now();
+    DateTime ultimoRegistro = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bpm);
 
+        txtValorBpm = (TextView) findViewById(R.id.txtValorBpm);
+
         // Inicializa o serviço do JodaTime para Android
         JodaTimeAndroid.init(this);
-
-        txtValorBpm = (TextView) findViewById(R.id.txtValorBpm);
+        ultimoRegistro = DateTime.now();
 
         bt = new BluetoothSPP(this);
 
@@ -61,27 +64,26 @@ public class BpmActivity extends AppCompatActivity {
         bt.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
             public void onDataReceived(byte[] data, String bpm) {
                 if(!StringUtils.isNumeric(bpm)) return;
+
                 bpmsTemp.add(Long.valueOf(bpm));
 
                 // Verifica se passaram alguns segundos desde o último registro para manter uma média coerente
                 if(DateTime.now().isAfter(ultimoRegistro.plusSeconds(5))) {
-                    // pega a soma dos BPMs para tirar a média
-                    Long somaBpms = 0L;
-                    for (Long bpmItem : bpmsTemp) {
-                        somaBpms += bpmItem;
-                    }
+                    String horaFormatada = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss").print(DateTime.now());
 
-                    // mantendo a média como um número inteiro
-                    Long mediaBpms = somaBpms / bpmsTemp.size();
+                    Long mediaBpms = extrairMediaBpms();
 
                     // limpa a lista para a próxima iteração
                     bpmsTemp.clear();
 
                     if(conectado) {
-                        registrarPulsacao(mediaBpms);
+                        //registrarPulsacoesBanco();
+                        registrarPulsacao(mediaBpms, horaFormatada);
+
                         ultimoRegistro = DateTime.now();
                     } else {
-                        // TODO implementar registro no SQLite
+                        //Pulsacao pulsacaoEntity = new Pulsacao(LOGIN, mediaBpms, horaFormatada);
+                        //pulsacaoEntity.save();
                     }
                 }
 
@@ -99,24 +101,42 @@ public class BpmActivity extends AppCompatActivity {
 
     }
 
-    private PulsacaoRequest registrarPulsacao(Long pulsacao) {
-        PulsacaoRequest dto = new PulsacaoRequest();
-        dto.setValor(pulsacao);
-        dto.setLogin("felipe");
+    private Long extrairMediaBpms() {
+        // pega a soma dos BPMs para tirar a média
+        Long somaBpms = 0L;
+        for (Long bpmItem : bpmsTemp) {
+            somaBpms += bpmItem;
+        }
 
-        String hora = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss").print(DateTime.now());
+        // mantendo a média como um número inteiro
+        return somaBpms / bpmsTemp.size();
+    }
+
+    private void registrarPulsacoesBanco() {
+        List<Pulsacao> pulsacoesEntity = Pulsacao.find(Pulsacao.class, "login = ?", LOGIN);
+        if(pulsacoesEntity != null && !pulsacoesEntity.isEmpty()) {
+            for (Pulsacao pulsacaoItem : pulsacoesEntity) {
+                registrarPulsacao(pulsacaoItem.valor, pulsacaoItem.hora);
+            }
+        }
+    }
+
+    private PulsacaoDTO registrarPulsacao(Long pulsacao, String hora) {
+        PulsacaoDTO dto = new PulsacaoDTO();
+        dto.setValor(pulsacao);
+        dto.setLogin(LOGIN);
         dto.setHora(hora);
 
         Call<Void> pulsacaoDTOCall = pulsacaoService.registrar(dto);
         pulsacaoDTOCall.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                //System.out.println("Pulsação registrada com sucesso. " + response.message() + " / " + response.code());
+                System.out.println("Pulsação registrada com sucesso. " + response.message() + " / " + response.code());
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                //System.out.println("Não foi possível registrar uma nova pulsação! " + t.getMessage());
+                System.out.println("Não foi possível registrar uma nova pulsação! " + t.getMessage());
             }
         });
 
