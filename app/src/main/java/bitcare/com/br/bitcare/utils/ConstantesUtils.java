@@ -1,4 +1,4 @@
-package bitcare.com.br.bitcare;
+package bitcare.com.br.bitcare.utils;
 
 /**
  * Created by Felipe on 10/10/2016.

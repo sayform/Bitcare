@@ -29,6 +29,7 @@ dependencies {
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+    compile 'com.github.satyan:sugar:1.4'
     compile 'net.danlew:android.joda:2.9.4.2'
     testCompile 'junit:junit:4.12'
 }

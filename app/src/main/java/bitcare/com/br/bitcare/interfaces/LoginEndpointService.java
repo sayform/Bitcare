@@ -1,6 +1,5 @@
 package bitcare.com.br.bitcare.interfaces;
 
-import bitcare.com.br.bitcare.ConstantesUtils;
 import bitcare.com.br.bitcare.models.LoginRequest;
 import retrofit2.Call;
 import retrofit2.http.Body;

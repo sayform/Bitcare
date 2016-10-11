@@ -1,10 +1,10 @@
-package bitcare.com.br.bitcare;
+package bitcare.com.br.bitcare.models;
 
 /**
  * Created by Rafael on 09/10/2016.
  */
 
-public class PulsacaoDTO {
+public class PulsacaoRequest {
     private String login;
     private Long valor;
     private String hora;

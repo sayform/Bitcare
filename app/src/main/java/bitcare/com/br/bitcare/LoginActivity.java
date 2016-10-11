@@ -8,12 +8,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.io.IOException;
 
 import bitcare.com.br.bitcare.interfaces.LoginEndpointService;
 import bitcare.com.br.bitcare.models.LoginRequest;
+import bitcare.com.br.bitcare.utils.ConstantesUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

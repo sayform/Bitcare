@@ -1,4 +1,4 @@
-package bitcare.com.br.bitcare;
+package bitcare.com.br.bitcare.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
