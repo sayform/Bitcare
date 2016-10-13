@@ -8,4 +8,7 @@
     <string name="strSenha">Senha</string>
     <string name="strUsuario">Usuário</string>
     <string name="txtErroLogin" />
+    <string name="strUsuarioEstatistica">Nome do Usuário é Longo</string>
+    <string name="strIdade" >112</string>
+    <string name="strAnos" >anos</string>
 </resources>

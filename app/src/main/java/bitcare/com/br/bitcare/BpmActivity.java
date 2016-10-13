@@ -3,6 +3,7 @@ package bitcare.com.br.bitcare;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -184,4 +185,22 @@ public class BpmActivity extends AppCompatActivity {
         });
     }
 
+
+    /**
+     * Exibe a tela de estatisticas, com os ultimos batimentos do usuario logado
+     * @param view
+     */
+    public void mostrarEstatistica(View view) {
+        Intent toEstatistica = new Intent(this, EstatisticaActivity.class);
+        toEstatistica.putExtra("login",login);
+        startActivity(toEstatistica);
+    }
+
 }
+
+
+
+
+
+
+

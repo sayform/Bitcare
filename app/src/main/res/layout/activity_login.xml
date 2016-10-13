@@ -115,13 +115,21 @@
         android:textColor="@android:color/background_light"
         android:text="@string/txtErroLogin" />
 
-    <ProgressBar
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/btnLogin"
-        android:layout_toEndOf="@+id/btnLogin"
-        android:layout_marginStart="17dp"
-        android:id="@+id/pbLogin" />
+        android:layout_below="@+id/txtErroLogin"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:id="@+id/layProgressBar">
 
+        <ProgressBar
+            style="?android:attr/progressBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminateTint="@android:color/background_light"
+            android:id="@+id/pbLogin" />
+    </LinearLayout>
 </RelativeLayout>
+
