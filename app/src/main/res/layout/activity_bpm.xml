@@ -42,8 +42,7 @@
             android:drawableTop="@drawable/ic_chart_bar"
             android:text="@string/strEstatistica"
             android:textAllCaps="false"
-            tools:ignore="ButtonStyle"
-            android:onClick="mostrarEstatistica (BpmActivity)" />
+            tools:ignore="ButtonStyle" />
 
         <!-- <Button
              android:id="@+id/btnMedicamento"

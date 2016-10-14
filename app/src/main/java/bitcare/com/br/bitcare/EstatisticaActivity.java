@@ -14,6 +14,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import bitcare.com.br.bitcare.entities.Usuario;
 import bitcare.com.br.bitcare.interfaces.EstatisticaEndpointService;
 import bitcare.com.br.bitcare.interfaces.LoginEndpointService;
 import bitcare.com.br.bitcare.models.LoginRequest;
@@ -32,10 +33,19 @@ public class EstatisticaActivity extends AppCompatActivity {
 
     private String login;
 
-    List<PulsacaoDTO> ultimasPulsacoes = new ArrayList<>();
-    ArrayAdapter<PulsacaoDTO> pulsacaoDTOArrayAdapter;
+    private List<PulsacaoDTO> ultimasPulsacoes = new ArrayList<>();
 
-    ListView listaPulsacoes;
+    private Usuario usuario;
+
+    private ArrayAdapter<PulsacaoDTO> pulsacaoDTOArrayAdapter;
+
+    private EstatisticaEndpointService estatisticaEndpointService = new Retrofit.Builder()
+            .baseUrl(ConstantesUtils.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(EstatisticaEndpointService.class);
+
+    private ListView listaPulsacoes;
 
 
     @Override
@@ -49,22 +59,15 @@ public class EstatisticaActivity extends AppCompatActivity {
         pulsacaoDTOArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, ultimasPulsacoes);
         listaPulsacoes = (ListView) findViewById(R.id.lstEstatisticas);
 
-
+        buscarDadosUsuario();
         buscarEstatisticas();
-
 
     }
 
 
     private void buscarEstatisticas() {
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(ConstantesUtils.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        EstatisticaEndpointService service = retrofit.create(EstatisticaEndpointService.class);
-        Call<List<PulsacaoDTO>> endpointLogin = service.buscar(login, 5);
+        Call<List<PulsacaoDTO>> endpointLogin = estatisticaEndpointService.buscarPulsacoes(login, 5);
 
         endpointLogin.enqueue(new Callback<List<PulsacaoDTO>>() {
             @Override
@@ -86,6 +89,38 @@ public class EstatisticaActivity extends AppCompatActivity {
         });
 
     }
+
+
+
+    private void buscarDadosUsuario() {
+
+        Call<Usuario> endpointUsuario = estatisticaEndpointService.buscarDadosUsuario(login);
+
+        endpointUsuario.enqueue(new Callback<Usuario>() {
+            @Override
+            public void onResponse(Call<Usuario> call, Response<Usuario> response) {
+                usuario = response.body();
+                System.out.println("Busca de usuário feita com sucesso.");
+
+            }
+
+            @Override
+            public void onFailure(Call<Usuario> call, Throwable t) {
+                System.out.println("Erro ao buscar os dados do usuário");
+                ultimasPulsacoes = new ArrayList<>();
+            }
+        });
+
+
+
+    }
+
+
+
+
+
+
+
 
     public void mostrarBpm(View view) {
         Intent toBpm = new Intent(this, BpmActivity.class);
