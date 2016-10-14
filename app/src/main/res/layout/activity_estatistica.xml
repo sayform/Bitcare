@@ -42,10 +42,10 @@
             tools:ignore="InefficientWeight">
 
             <TextView
-                android:text="@string/strUsuarioEstatistica"
+                android:text=""
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView"
+                android:id="@+id/txtNome"
                 android:layout_weight="1"
                 android:textSize="16dp"
                 android:textColor="@color/colorPrimary"
@@ -59,16 +59,16 @@
                 tools:ignore="ObsoleteLayoutParam">
 
             <TextView
-                android:text="@string/strIdade"
+                android:text=""
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/NrIdade"
+                android:id="@+id/nrIdade"
                 android:textSize="14dp"
                 android:layout_weight="0"
                 tools:ignore="SpUsage" />
 
                 <TextView
-                    android:text="@string/strAnos"
+                    android:text=""
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/StrAnos"
@@ -138,18 +138,11 @@
         android:id="@+id/ltBody"
         tools:ignore="DisableBaselineAlignment,UnknownId">
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="16"
-            tools:ignore="InefficientWeight,PxUsage,UselessParent">
-
-            <ListView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/lstEstatisticas"
-                tools:ignore="NestedScrolling" />
-        </ScrollView>
+       <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/lstEstatisticas"
+            tools:ignore="NestedScrolling" />
     </LinearLayout>
 
 
