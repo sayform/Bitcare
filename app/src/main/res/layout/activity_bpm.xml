@@ -43,7 +43,7 @@
             android:text="@string/strEstatistica"
             android:textAllCaps="false"
             tools:ignore="ButtonStyle"
-            android:onClick="mostrarEstatistica (BpmActivity)" />
+            android:onClick="mostrarEstatistica" />
 
         <!-- <Button
              android:id="@+id/btnMedicamento"
