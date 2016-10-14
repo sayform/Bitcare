@@ -42,6 +42,7 @@
             android:drawableTop="@drawable/ic_chart_bar"
             android:text="@string/strEstatistica"
             android:textAllCaps="false"
+            android:onClick="mostrarEstatistica"
             tools:ignore="ButtonStyle" />
 
         <!-- <Button

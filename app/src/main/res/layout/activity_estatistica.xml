@@ -100,6 +100,7 @@
             android:drawableTop="@drawable/ic_heart"
             android:text="@string/strBpm"
             android:textAllCaps="false"
+            android:onClick="mostrarBpm"
             tools:ignore="ButtonStyle" />
 
         <Button
