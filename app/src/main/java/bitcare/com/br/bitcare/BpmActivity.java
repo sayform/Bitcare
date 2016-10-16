@@ -191,7 +191,7 @@ public class BpmActivity extends AppCompatActivity {
                     txtBpm.setPadding(26,26,26,26);
                     txtBpm.setTextSize(19.0f);
                     txtBpm.setTextColor(Color.DKGRAY);
-                    txtBpm.setText(String.format(Locale.US, "%dBPM", ultimasPulsacoes.get(i).getValor()));
+                    txtBpm.setText(String.format(Locale.US, "%d BPM", ultimasPulsacoes.get(i).getValor()));
 
                     TextView secondsAgo = new AppCompatTextView(BpmActivity.this);
                     secondsAgo.setPadding(26,26,26,26);
