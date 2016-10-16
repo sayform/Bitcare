@@ -1,11 +1,18 @@
 package bitcare.com.br.bitcare;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatTextView;
+import android.text.format.DateUtils;
+import android.util.Size;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import net.danlew.android.joda.JodaTimeAndroid;
@@ -16,6 +23,7 @@ import org.joda.time.format.DateTimeFormat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
@@ -38,7 +46,8 @@ public class BpmActivity extends AppCompatActivity {
 
     BluetoothSPP bt;
     TextView txtValorBpm;
-    ListView lstBpm;
+    TableLayout tblBpm;
+    //ListView lstBpm;
 
     final PulsacaoEndpointService pulsacaoService =  new Retrofit.Builder()
                                                                 .baseUrl(ConstantesUtils.BASE_URL)
@@ -50,7 +59,7 @@ public class BpmActivity extends AppCompatActivity {
 
     // Utilizado para gerenciar as médias de BPMs para enviar para a API
     List<PulsacaoDTO> ultimasPulsacoes = new ArrayList<>();
-    ArrayAdapter<PulsacaoDTO> pulsacaoDTOArrayAdapter;
+    //ArrayAdapter<PulsacaoDTO> pulsacaoDTOArrayAdapter;
     List<Long> bpmsTemp = new ArrayList<>();
     DateTime ultimoRegistro = null;
 
@@ -60,7 +69,8 @@ public class BpmActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bpm);
 
         txtValorBpm = (TextView) findViewById(R.id.txtValorBpm);
-        lstBpm = (ListView) findViewById(R.id.lstBpm);
+        //lstBpm = (ListView) findViewById(R.id.lstBpm);
+        tblBpm = (TableLayout) findViewById(R.id.tblBpm);
 
         //Recebe o login da activity de login
         Bundle bundle = getIntent().getExtras();
@@ -71,8 +81,8 @@ public class BpmActivity extends AppCompatActivity {
         JodaTimeAndroid.init(this);
         ultimoRegistro = DateTime.now();
 
-        pulsacaoDTOArrayAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, ultimasPulsacoes);
+//        pulsacaoDTOArrayAdapter = new ArrayAdapter<>(this,
+//                android.R.layout.simple_list_item_1, ultimasPulsacoes);
 
         montarListaBpms();
 
@@ -166,15 +176,39 @@ public class BpmActivity extends AppCompatActivity {
     }
 
     private void montarListaBpms() {
-        pulsacaoService.buscar(login, 6L).enqueue(new Callback<List<PulsacaoDTO>>() {
+        pulsacaoService.buscar(login, 20L).enqueue(new Callback<List<PulsacaoDTO>>() {
             @Override
             public void onResponse(Call<List<PulsacaoDTO>> call, Response<List<PulsacaoDTO>> response) {
                 ultimasPulsacoes = response.body();
 
-                pulsacaoDTOArrayAdapter.clear();
-                pulsacaoDTOArrayAdapter.addAll(ultimasPulsacoes);
+                tblBpm.removeAllViews();
+                for (int i = 0; i < ultimasPulsacoes.size(); i++) {
+                    TableRow row= new TableRow(BpmActivity.this);
+                    TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+                    row.setLayoutParams(lp);
 
-                lstBpm.setAdapter(pulsacaoDTOArrayAdapter);
+                    TextView txtBpm = new AppCompatTextView(BpmActivity.this);
+                    txtBpm.setPadding(26,26,26,26);
+                    txtBpm.setTextSize(19.0f);
+                    txtBpm.setTextColor(Color.DKGRAY);
+                    txtBpm.setText(String.format(Locale.US, "%dBPM", ultimasPulsacoes.get(i).getValor()));
+
+                    TextView secondsAgo = new AppCompatTextView(BpmActivity.this);
+                    secondsAgo.setPadding(26,26,26,26);
+                    secondsAgo.setTextSize(19.0f);
+                    secondsAgo.setTextColor(Color.GRAY);
+                    secondsAgo.setGravity(Gravity.END);
+
+                    DateTime hora = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss")
+                                                    .parseDateTime(ultimasPulsacoes.get(i).getHora());
+                    String horaFormatada = DateUtils.getRelativeTimeSpanString(hora.getMillis()).toString();
+                    secondsAgo.setText(horaFormatada);
+
+                    row.addView(txtBpm);
+                    row.addView(secondsAgo);
+
+                    tblBpm.addView(row,i);
+                }
             }
 
             @Override
