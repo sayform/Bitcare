@@ -142,7 +142,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/lstEstatisticas"
-            tools:ignore="NestedScrolling" />
+            tools:ignore="NestedScrolling"
+            android:layout_marginBottom="64dp"/>
     </LinearLayout>
 
 
