@@ -2,15 +2,12 @@ package bitcare.com.br.bitcare;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatTextView;
 import android.text.format.DateUtils;
-import android.util.Size;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -27,16 +24,15 @@ import java.util.Locale;
 
 import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
-import bitcare.com.br.bitcare.entities.Pulsacao;
 import bitcare.com.br.bitcare.interfaces.PulsacaoEndpointService;
+import bitcare.com.br.bitcare.models.CloudantViewContainerDTO;
 import bitcare.com.br.bitcare.models.PulsacaoDTO;
 import bitcare.com.br.bitcare.utils.ConexaoStatusUtil;
 import bitcare.com.br.bitcare.utils.ConstantesUtils;
+import bitcare.com.br.bitcare.utils.RetrofitGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class BpmActivity extends AppCompatActivity {
 
@@ -48,12 +44,6 @@ public class BpmActivity extends AppCompatActivity {
     TextView txtValorBpm;
     TableLayout tblBpm;
     //ListView lstBpm;
-
-    final PulsacaoEndpointService pulsacaoService =  new Retrofit.Builder()
-                                                                .baseUrl(ConstantesUtils.BASE_URL)
-                                                                .addConverterFactory(GsonConverterFactory.create())
-                                                                .build()
-                                                                .create(PulsacaoEndpointService.class);
 
     boolean conectado;
 
@@ -99,7 +89,7 @@ public class BpmActivity extends AppCompatActivity {
 
                 // Verifica se passaram alguns segundos desde o último registro para manter uma média coerente
                 if(DateTime.now().isAfter(ultimoRegistro.plusSeconds(2))) {
-                    String horaFormatada = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss").print(DateTime.now());
+                    String horaFormatada = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ").print(DateTime.now());
                     ultimoRegistro = DateTime.now();
 
                     Long mediaBpms = extrairMediaBpms();
@@ -112,8 +102,6 @@ public class BpmActivity extends AppCompatActivity {
                         registrarPulsacao(mediaBpms, horaFormatada);
 
                     } else {
-                        //Pulsacao pulsacaoEntity = new Pulsacao(login, mediaBpms, horaFormatada);
-                        //pulsacaoEntity.save();
                     }
                 }
 
@@ -143,21 +131,13 @@ public class BpmActivity extends AppCompatActivity {
         return somaBpms / bpmsTemp.size();
     }
 
-//    private void registrarPulsacoesBanco() {
-//        List<Pulsacao> pulsacoesEntity = Pulsacao.find(Pulsacao.class, "login = ?", login);
-//        if(pulsacoesEntity != null && !pulsacoesEntity.isEmpty()) {
-//            for (Pulsacao pulsacaoItem : pulsacoesEntity) {
-//                registrarPulsacao(pulsacaoItem.valor, pulsacaoItem.hora);
-//            }
-//        }
-//    }
-
     private PulsacaoDTO registrarPulsacao(Long pulsacao, String hora) {
         PulsacaoDTO dto = new PulsacaoDTO();
         dto.setValor(pulsacao);
         dto.setLogin(login);
         dto.setHora(hora);
 
+        PulsacaoEndpointService pulsacaoService = RetrofitGenerator.createService(PulsacaoEndpointService.class);
         Call<Void> pulsacaoDTOCall = pulsacaoService.registrar(dto);
         pulsacaoDTOCall.enqueue(new Callback<Void>() {
             @Override
@@ -176,13 +156,20 @@ public class BpmActivity extends AppCompatActivity {
     }
 
     private void montarListaBpms() {
-        pulsacaoService.buscar(login, 20L).enqueue(new Callback<List<PulsacaoDTO>>() {
+        PulsacaoEndpointService pulsacaoService = RetrofitGenerator.createService(PulsacaoEndpointService.class);
+        pulsacaoService.buscar(login, 20L).enqueue(new Callback<CloudantViewContainerDTO<PulsacaoDTO>>() {
             @Override
-            public void onResponse(Call<List<PulsacaoDTO>> call, Response<List<PulsacaoDTO>> response) {
-                ultimasPulsacoes = response.body();
+            public void onResponse(Call<CloudantViewContainerDTO<PulsacaoDTO>> call, Response<CloudantViewContainerDTO<PulsacaoDTO>> response) {
+                CloudantViewContainerDTO<PulsacaoDTO> body = response.body();
+
+                if(body == null || body.getRows() == null || body.getRows().isEmpty()) {
+                    return;
+                }
 
                 tblBpm.removeAllViews();
-                for (int i = 0; i < ultimasPulsacoes.size(); i++) {
+                for (int i = 0; i < body.getRows().size(); i++) {
+                    PulsacaoDTO pulsacaoDTO = body.getRows().get(i).getValue();
+
                     TableRow row= new TableRow(BpmActivity.this);
                     TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
                     row.setLayoutParams(lp);
@@ -191,7 +178,7 @@ public class BpmActivity extends AppCompatActivity {
                     txtBpm.setPadding(26,26,26,26);
                     txtBpm.setTextSize(19.0f);
                     txtBpm.setTextColor(Color.DKGRAY);
-                    txtBpm.setText(String.format(Locale.US, "%d BPM", ultimasPulsacoes.get(i).getValor()));
+                    txtBpm.setText(String.format(Locale.US, "%d BPM", pulsacaoDTO.getValor()));
 
                     TextView secondsAgo = new AppCompatTextView(BpmActivity.this);
                     secondsAgo.setPadding(26,26,26,26);
@@ -199,7 +186,7 @@ public class BpmActivity extends AppCompatActivity {
                     secondsAgo.setTextColor(Color.GRAY);
                     secondsAgo.setGravity(Gravity.END);
 
-                    DateTime hora = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss")
+                    DateTime hora = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
                                                     .parseDateTime(ultimasPulsacoes.get(i).getHora());
                     String horaFormatada = DateUtils.getRelativeTimeSpanString(hora.getMillis()).toString();
                     secondsAgo.setText(horaFormatada);
@@ -212,7 +199,7 @@ public class BpmActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<List<PulsacaoDTO>> call, Throwable t) {
+            public void onFailure(Call<CloudantViewContainerDTO<PulsacaoDTO>> call, Throwable t) {
                 System.out.println("não foi possível buscar as pulsações");
                 ultimasPulsacoes = new ArrayList<>();
             }

@@ -5,6 +5,7 @@ package bitcare.com.br.bitcare.models;
  */
 
 public class PulsacaoDTO {
+    private final String type = "pulsacao";
     private String login;
     private Long valor;
     private String hora;
@@ -33,8 +34,7 @@ public class PulsacaoDTO {
         this.hora = hora;
     }
 
-    @Override
-    public String toString() {
-        return valor + " BPM - " + hora;
+    public String getType() {
+        return type;
     }
 }

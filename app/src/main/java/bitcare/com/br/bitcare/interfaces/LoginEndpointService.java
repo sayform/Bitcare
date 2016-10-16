@@ -1,9 +1,10 @@
 package bitcare.com.br.bitcare.interfaces;
 
-import bitcare.com.br.bitcare.models.LoginRequest;
+import bitcare.com.br.bitcare.models.CloudantViewContainerDTO;
+import bitcare.com.br.bitcare.models.LoginResponse;
 import retrofit2.Call;
-import retrofit2.http.Body;
-import retrofit2.http.POST;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
 
 /**
  * Created by Felipe on 09/10/2016.
@@ -11,7 +12,7 @@ import retrofit2.http.POST;
 
 public interface LoginEndpointService {
 
-    @POST("login/autenticacao")
-    Call<Void> logar(@Body LoginRequest loginRequest);
+    @GET("/bitcare_db/_design/usuarios/_view/autenticacao?")
+    Call<CloudantViewContainerDTO<LoginResponse>> logar(@Query("key") String loginKey);
 
 }

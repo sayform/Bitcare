@@ -9,9 +9,15 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.IOException;
+
 import bitcare.com.br.bitcare.interfaces.LoginEndpointService;
+import bitcare.com.br.bitcare.models.CloudantViewContainerDTO;
 import bitcare.com.br.bitcare.models.LoginRequest;
+import bitcare.com.br.bitcare.models.LoginResponse;
 import bitcare.com.br.bitcare.utils.ConstantesUtils;
+import bitcare.com.br.bitcare.utils.RetrofitGenerator;
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -72,17 +78,15 @@ public class LoginActivity extends AppCompatActivity {
         login.setLogin(loginText);
         login.setSenha(senhaText);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(ConstantesUtils.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+        LoginEndpointService service = RetrofitGenerator.createService(LoginEndpointService.class);
 
-        LoginEndpointService service = retrofit.create(LoginEndpointService.class);
-        Call<Void> endpointLogin = service.logar(login);
+        String loginKey = String.format("[\"%s\",\"%s\"]", login.getLogin(), login.getSenha());
+        Call<CloudantViewContainerDTO<LoginResponse>> endpointLogin = service.logar(loginKey);
 
-        endpointLogin.enqueue(new Callback<Void>() {
+        endpointLogin.enqueue(new Callback<CloudantViewContainerDTO<LoginResponse>>() {
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
+            public void onResponse(Call<CloudantViewContainerDTO<LoginResponse>> call,
+                                   Response<CloudantViewContainerDTO<LoginResponse>> response) {
 
                 httpStatusCode = response.code();
                 Log.i("LOGIN_ACTIVITY","onResponse " + httpStatusCode);
@@ -90,14 +94,14 @@ public class LoginActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
 
                 if (httpStatusCode == 200) {
-                    chamarBpmActivity();
+                    chamarBpmActivity(response.body().getRows().get(0).getValue().getLoginId());
                 } else {
                     txtErroLogin.setText("Login inexistente.");
                 }
             }
 
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
+            public void onFailure(Call<CloudantViewContainerDTO<LoginResponse>> call, Throwable t) {
                 Log.e("LOGIN_ACTIVITY", "Erro: " + t.getMessage());
                 progressBar.setVisibility(View.GONE);
                 txtErroLogin.setText("Ocorreu um erro no sistema. Tente novamente.");
@@ -111,9 +115,9 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Metodo privado que navega para a Activity de BPM
      */
-    private void chamarBpmActivity() {
+    private void chamarBpmActivity(String loginId) {
         Intent toBpmActivity = new Intent(this, BpmActivity.class);
-        toBpmActivity.putExtra("login",login.getText().toString());
+        toBpmActivity.putExtra("login",loginId);
         startActivity(toBpmActivity);
     }
 
