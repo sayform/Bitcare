@@ -1,18 +1,29 @@
 package bitcare.com.br.bitcare;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatTextView;
+import android.text.format.DateUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import bitcare.com.br.bitcare.entities.MediaEstatistica;
 import bitcare.com.br.bitcare.entities.Usuario;
@@ -41,15 +52,16 @@ public class EstatisticaActivity extends AppCompatActivity {
     private TextView nrIdade;
     private TextView txtNome;
 
-    private ArrayAdapter<MediaEstatistica> pulsacaoDTOArrayAdapter;
+    //private ArrayAdapter<MediaEstatistica> pulsacaoDTOArrayAdapter;
 
     private EstatisticaEndpointService estatisticaEndpointService = new Retrofit.Builder()
-            .baseUrl(ConstantesUtils.BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(EstatisticaEndpointService.class);
+                                                                        .baseUrl(ConstantesUtils.BASE_URL)
+                                                                        .addConverterFactory(GsonConverterFactory.create())
+                                                                        .build()
+                                                                        .create(EstatisticaEndpointService.class);
 
-    private ListView listaPulsacoes;
+    private TableLayout tblPulsacoes;
+    //private ListView listaPulsacoes;
 
 
     @Override
@@ -60,8 +72,7 @@ public class EstatisticaActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         login = bundle.getString("login");
 
-        pulsacaoDTOArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, ultimasPulsacoes);
-        listaPulsacoes = (ListView) findViewById(R.id.lstEstatisticas);
+        tblPulsacoes = (TableLayout) findViewById(R.id.tblEstatistica);
 
         nrIdade = (TextView) findViewById(R.id.nrIdade);
         txtNome = (TextView) findViewById(R.id.txtNome);
@@ -74,7 +85,7 @@ public class EstatisticaActivity extends AppCompatActivity {
 
     private void buscarEstatisticas() {
 
-        Call<List<MediaEstatistica>> endpointLogin = estatisticaEndpointService.buscarPulsacoes(login, 5);
+        Call<List<MediaEstatistica>> endpointLogin = estatisticaEndpointService.buscarPulsacoes(login, 10);
 
         endpointLogin.enqueue(new Callback<List<MediaEstatistica>>() {
             @Override
@@ -82,9 +93,57 @@ public class EstatisticaActivity extends AppCompatActivity {
 
                 ultimasPulsacoes = response.body();
 
-                pulsacaoDTOArrayAdapter.clear();
-                pulsacaoDTOArrayAdapter.addAll(ultimasPulsacoes);
-                listaPulsacoes.setAdapter(pulsacaoDTOArrayAdapter);
+                tblPulsacoes.removeAllViews();
+
+                TableRow headerRow = new TableRow(EstatisticaActivity.this);
+                headerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT));
+
+                TextView headerBpm = new AppCompatTextView(EstatisticaActivity.this);
+                headerBpm.setPadding(26,26,26,26);
+                headerBpm.setTextSize(19.0f);
+                headerBpm.setTextColor(Color.BLACK);
+                headerBpm.setTypeface(null, Typeface.BOLD);
+                headerBpm.setText("Média");
+
+                TextView headerIntervalo = new AppCompatTextView(EstatisticaActivity.this);
+                headerIntervalo.setPadding(26,26,26,26);
+                headerIntervalo.setTextSize(19.0f);
+                headerIntervalo.setTextColor(Color.BLACK);
+                headerIntervalo.setTypeface(null, Typeface.BOLD);
+                headerIntervalo.setText("Intervalo");
+
+                headerRow.addView(headerBpm);
+                headerRow.addView(headerIntervalo);
+
+                tblPulsacoes.addView(headerRow);
+
+                for (int i = 0; i < ultimasPulsacoes.size(); i++) {
+                    TableRow row= new TableRow(EstatisticaActivity.this);
+                    TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+                    row.setLayoutParams(lp);
+
+                    TextView txtBpm = new AppCompatTextView(EstatisticaActivity.this);
+                    txtBpm.setPadding(26,26,26,26);
+                    txtBpm.setTextSize(19.0f);
+                    txtBpm.setTextColor(Color.DKGRAY);
+                    txtBpm.setText(String.format(Locale.US, "%d BPM", ultimasPulsacoes.get(i).getValor()));
+
+                    TextView secondsAgo = new AppCompatTextView(EstatisticaActivity.this);
+                    secondsAgo.setPadding(26,26,26,26);
+                    secondsAgo.setTextSize(19.0f);
+                    secondsAgo.setTextColor(Color.GRAY);
+                    secondsAgo.setGravity(Gravity.END);
+
+                    DateTime hora = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss")
+                                                            .parseDateTime(ultimasPulsacoes.get(i).getHora());
+                    String horaFormatada = hora.getHourOfDay() + "h -" + (hora.getHourOfDay() + 1) + "h";
+                    secondsAgo.setText(horaFormatada);
+
+                    row.addView(txtBpm);
+                    row.addView(secondsAgo);
+
+                    tblPulsacoes.addView(row,i);
+                }
 
             }
 
@@ -128,9 +187,7 @@ public class EstatisticaActivity extends AppCompatActivity {
 
 
     public void mostrarBpm(View view) {
-        Intent toBpm = new Intent(this, BpmActivity.class);
-        toBpm.putExtra("login",login);
-        startActivity(toBpm);
+        finish();
     }
 
 

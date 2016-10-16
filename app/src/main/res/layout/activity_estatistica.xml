@@ -130,21 +130,38 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
+        android:scrollbars="none"
         android:layout_below="@+id/layUsuario"
-        android:id="@+id/ltBody"
-        tools:ignore="DisableBaselineAlignment,UnknownId">
-
-       <ListView
-            android:layout_width="wrap_content"
+        android:layout_marginBottom="64dp">
+        <TableLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/lstEstatisticas"
-            tools:ignore="NestedScrolling"
-            android:layout_marginBottom="64dp"/>
-    </LinearLayout>
+            android:id="@+id/tblEstatistica"
+            android:stretchColumns="1"
+            android:padding="32dp"
+            android:layout_marginTop="-16dp"
+            android:isScrollContainer="true">
+        </TableLayout>
+    </ScrollView>
+
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:layout_below="@+id/layUsuario"-->
+        <!--android:id="@+id/ltBody"-->
+        <!--tools:ignore="DisableBaselineAlignment,UnknownId">-->
+
+       <!--<ListView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:id="@+id/lstEstatisticas"-->
+            <!--tools:ignore="NestedScrolling"-->
+            <!--android:layout_marginBottom="64dp"/>-->
+    <!--</LinearLayout>-->
 
 
 
