@@ -124,7 +124,7 @@ public class EstatisticaActivity extends AppCompatActivity {
                     secondsAgo.setTextColor(Color.GRAY);
                     secondsAgo.setGravity(Gravity.END);
 
-                    String horaFormatada = horaInicio.getHourOfDay() + "h -" + horaFim.getHourOfDay() + "h";
+                    String horaFormatada = horaInicio.getHourOfDay() + "h - " + horaFim.getHourOfDay() + "h";
                     secondsAgo.setText(horaFormatada);
 
                     row.addView(txtBpm);
