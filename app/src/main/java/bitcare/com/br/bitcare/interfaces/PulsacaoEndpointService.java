@@ -1,7 +1,5 @@
 package bitcare.com.br.bitcare.interfaces;
 
-import java.util.List;
-
 import bitcare.com.br.bitcare.models.CloudantViewContainerDTO;
 import bitcare.com.br.bitcare.models.PulsacaoDTO;
 import retrofit2.Call;
@@ -20,7 +18,6 @@ public interface PulsacaoEndpointService {
     Call<Void> registrar(@Body PulsacaoDTO user);
 
     @GET("/bitcare_db/_design/pulsacoes/_view/all?")
-    Call<CloudantViewContainerDTO<PulsacaoDTO>> buscar(@Query("key") String loginId,
-                                                        @Query("limit") Long quantidade);
+    Call<CloudantViewContainerDTO<PulsacaoDTO>> buscar(@Query("limit") Long quantidade, @Query("key") String loginKey);
 
 }

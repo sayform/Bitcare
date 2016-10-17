@@ -18,7 +18,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -26,6 +29,7 @@ import app.akexorcist.bluetotohspp.library.BluetoothSPP;
 import app.akexorcist.bluetotohspp.library.BluetoothState;
 import bitcare.com.br.bitcare.interfaces.PulsacaoEndpointService;
 import bitcare.com.br.bitcare.models.CloudantViewContainerDTO;
+import bitcare.com.br.bitcare.models.CloudantViewRowsDTO;
 import bitcare.com.br.bitcare.models.PulsacaoDTO;
 import bitcare.com.br.bitcare.utils.ConexaoStatusUtil;
 import bitcare.com.br.bitcare.utils.ConstantesUtils;
@@ -48,8 +52,6 @@ public class BpmActivity extends AppCompatActivity {
     boolean conectado;
 
     // Utilizado para gerenciar as médias de BPMs para enviar para a API
-    List<PulsacaoDTO> ultimasPulsacoes = new ArrayList<>();
-    //ArrayAdapter<PulsacaoDTO> pulsacaoDTOArrayAdapter;
     List<Long> bpmsTemp = new ArrayList<>();
     DateTime ultimoRegistro = null;
 
@@ -157,18 +159,32 @@ public class BpmActivity extends AppCompatActivity {
 
     private void montarListaBpms() {
         PulsacaoEndpointService pulsacaoService = RetrofitGenerator.createService(PulsacaoEndpointService.class);
-        pulsacaoService.buscar(login, 20L).enqueue(new Callback<CloudantViewContainerDTO<PulsacaoDTO>>() {
+        Call<CloudantViewContainerDTO<PulsacaoDTO>> buscar = pulsacaoService.buscar(20L, "\"" + login + "\"");
+        buscar.enqueue(new Callback<CloudantViewContainerDTO<PulsacaoDTO>>() {
             @Override
-            public void onResponse(Call<CloudantViewContainerDTO<PulsacaoDTO>> call, Response<CloudantViewContainerDTO<PulsacaoDTO>> response) {
+            public void onResponse(Call<CloudantViewContainerDTO<PulsacaoDTO>> call,
+                                   Response<CloudantViewContainerDTO<PulsacaoDTO>> response) {
                 CloudantViewContainerDTO<PulsacaoDTO> body = response.body();
 
                 if(body == null || body.getRows() == null || body.getRows().isEmpty()) {
                     return;
                 }
 
+                List<PulsacaoDTO> dtos = new ArrayList<>();
+                for (CloudantViewRowsDTO<PulsacaoDTO> row : body.getRows()) {
+                    dtos.add(row.getValue());
+                }
+
+                Collections.sort(dtos, new Comparator<PulsacaoDTO>() {
+                    @Override
+                    public int compare(PulsacaoDTO p1, PulsacaoDTO p2) {
+                        return p2.getHora().compareTo(p1.getHora());
+                    }
+                });
+
                 tblBpm.removeAllViews();
-                for (int i = 0; i < body.getRows().size(); i++) {
-                    PulsacaoDTO pulsacaoDTO = body.getRows().get(i).getValue();
+                for (int i = 0; i < dtos.size(); i++) {
+                    PulsacaoDTO pulsacaoDTO = dtos.get(i);
 
                     TableRow row= new TableRow(BpmActivity.this);
                     TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
@@ -187,7 +203,7 @@ public class BpmActivity extends AppCompatActivity {
                     secondsAgo.setGravity(Gravity.END);
 
                     DateTime hora = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-                                                    .parseDateTime(ultimasPulsacoes.get(i).getHora());
+                                                    .parseDateTime(pulsacaoDTO.getHora());
                     String horaFormatada = DateUtils.getRelativeTimeSpanString(hora.getMillis()).toString();
                     secondsAgo.setText(horaFormatada);
 
@@ -201,7 +217,7 @@ public class BpmActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<CloudantViewContainerDTO<PulsacaoDTO>> call, Throwable t) {
                 System.out.println("não foi possível buscar as pulsações");
-                ultimasPulsacoes = new ArrayList<>();
+                //ultimasPulsacoes = new ArrayList<>();
             }
         });
     }
