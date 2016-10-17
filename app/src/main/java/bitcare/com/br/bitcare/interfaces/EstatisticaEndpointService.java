@@ -4,6 +4,7 @@ import java.util.List;
 
 import bitcare.com.br.bitcare.entities.MediaEstatistica;
 import bitcare.com.br.bitcare.entities.Usuario;
+import bitcare.com.br.bitcare.models.CloudantViewContainerDTO;
 import bitcare.com.br.bitcare.models.PulsacaoDTO;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -17,10 +18,11 @@ import retrofit2.http.Query;
 
 public interface EstatisticaEndpointService {
 
-    @GET("/pulsacoes?")
-    Call<List<MediaEstatistica>> buscarPulsacoes(@Query("login") String login, @Query("intervalo") int intervalo);
+    @GET("/bitcare_db/_design/pulsacoes/_view/media-por-data?")
+    Call<CloudantViewContainerDTO<Long>> buscarPulsacoes(@Query("startkey") String loginDataStartKey,
+                                                         @Query("endkey") String loginDataEndKey);
 
-    @GET("/usuario/buscar?")
-    Call<Usuario> buscarDadosUsuario(@Query("login") String login);
+    @GET("/bitcare_db/_design/usuarios/_view/all?")
+    Call<CloudantViewContainerDTO<Usuario>> buscarDadosUsuario(@Query("key") String loginKey);
 
 }

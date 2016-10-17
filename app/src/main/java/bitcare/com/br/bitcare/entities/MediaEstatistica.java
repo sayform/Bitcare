@@ -34,11 +34,4 @@ public class MediaEstatistica {
         this.hora = hora;
     }
 
-    @Override
-    public String toString() {
-        String h = hora.substring( hora.length() - 8, hora.length() - 6   );
-        int horaFinal = Integer.parseInt(h) + 1;
-
-        return "Média BPM: " + valor + " | Intervalo: " +  Integer.parseInt(h)+"h - " + horaFinal+"h" ;
-    }
 }

@@ -21,6 +21,7 @@ import android.widget.TextView;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -29,9 +30,12 @@ import bitcare.com.br.bitcare.entities.MediaEstatistica;
 import bitcare.com.br.bitcare.entities.Usuario;
 import bitcare.com.br.bitcare.interfaces.EstatisticaEndpointService;
 import bitcare.com.br.bitcare.interfaces.LoginEndpointService;
+import bitcare.com.br.bitcare.models.CloudantViewContainerDTO;
 import bitcare.com.br.bitcare.models.LoginRequest;
 import bitcare.com.br.bitcare.models.PulsacaoDTO;
 import bitcare.com.br.bitcare.utils.ConstantesUtils;
+import bitcare.com.br.bitcare.utils.DateTimeUtils;
+import bitcare.com.br.bitcare.utils.RetrofitGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -43,6 +47,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class EstatisticaActivity extends AppCompatActivity {
 
+    private static final int QTD_ESTATISTICA = 24;
     private String login;
 
     private List<MediaEstatistica> ultimasPulsacoes = new ArrayList<>();
@@ -52,17 +57,7 @@ public class EstatisticaActivity extends AppCompatActivity {
     private TextView nrIdade;
     private TextView txtNome;
 
-    //private ArrayAdapter<MediaEstatistica> pulsacaoDTOArrayAdapter;
-
-    private EstatisticaEndpointService estatisticaEndpointService = new Retrofit.Builder()
-                                                                        .baseUrl(ConstantesUtils.BASE_URL)
-                                                                        .addConverterFactory(GsonConverterFactory.create())
-                                                                        .build()
-                                                                        .create(EstatisticaEndpointService.class);
-
     private TableLayout tblPulsacoes;
-    //private ListView listaPulsacoes;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,89 +79,113 @@ public class EstatisticaActivity extends AppCompatActivity {
 
 
     private void buscarEstatisticas() {
+        montaHeaderTabela();
 
-        Call<List<MediaEstatistica>> endpointLogin = estatisticaEndpointService.buscarPulsacoes(login, 10);
+        DateTime horario = DateTime.now();
+        String loginKey = "\"" + login + "\"";
 
-        endpointLogin.enqueue(new Callback<List<MediaEstatistica>>() {
-            @Override
-            public void onResponse(Call<List<MediaEstatistica>> call, Response<List<MediaEstatistica>> response) {
+        for(int i = 0; i <= QTD_ESTATISTICA; i++) {
+            final DateTime horaInicio = horario.minusHours(i)
+                                                .withMinuteOfHour(0)
+                                                .withSecondOfMinute(0)
+                                                .withMillisOfSecond(0);
+            final DateTime horaFim = horaInicio.plusHours(1);
 
-                ultimasPulsacoes = response.body();
+            String startKey = "[" + loginKey + ", \"" + DateTimeUtils.toString(horaInicio) + "\"]";
+            String endKey = "[" + loginKey + ", \"" + DateTimeUtils.toString(horaFim) + "\"]";
 
-                tblPulsacoes.removeAllViews();
+            EstatisticaEndpointService service = RetrofitGenerator.createService(EstatisticaEndpointService.class);
+            Call<CloudantViewContainerDTO<Long>> endpointLogin = service.buscarPulsacoes(startKey, endKey);
 
-                TableRow headerRow = new TableRow(EstatisticaActivity.this);
-                headerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT));
+            endpointLogin.enqueue(new Callback<CloudantViewContainerDTO<Long>>() {
+                @Override
+                public void onResponse(Call<CloudantViewContainerDTO<Long>> call, Response<CloudantViewContainerDTO<Long>> response) {
 
-                TextView headerBpm = new AppCompatTextView(EstatisticaActivity.this);
-                headerBpm.setPadding(26,26,26,26);
-                headerBpm.setTextSize(19.0f);
-                headerBpm.setTextColor(Color.BLACK);
-                headerBpm.setTypeface(null, Typeface.BOLD);
-                headerBpm.setText("Média");
+                    CloudantViewContainerDTO<Long> body = response.body();
+                    if(body == null || body.getRows() == null || body.getRows().isEmpty()) {
+                        return;
+                    }
 
-                TextView headerIntervalo = new AppCompatTextView(EstatisticaActivity.this);
-                headerIntervalo.setPadding(26,26,26,26);
-                headerIntervalo.setTextSize(19.0f);
-                headerIntervalo.setTextColor(Color.BLACK);
-                headerIntervalo.setTypeface(null, Typeface.BOLD);
-                headerIntervalo.setText("Intervalo");
+                    Long valor = body.getRows().get(0).getValue();
 
-                headerRow.addView(headerBpm);
-                headerRow.addView(headerIntervalo);
-
-                tblPulsacoes.addView(headerRow);
-
-                for (int i = 0; i < ultimasPulsacoes.size(); i++) {
-                    TableRow row= new TableRow(EstatisticaActivity.this);
+                    TableRow row = new TableRow(EstatisticaActivity.this);
                     TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
                     row.setLayoutParams(lp);
 
                     TextView txtBpm = new AppCompatTextView(EstatisticaActivity.this);
-                    txtBpm.setPadding(26,26,26,26);
+                    txtBpm.setPadding(26, 26, 26, 26);
                     txtBpm.setTextSize(19.0f);
                     txtBpm.setTextColor(Color.DKGRAY);
-                    txtBpm.setText(String.format(Locale.US, "%d BPM", ultimasPulsacoes.get(i).getValor()));
+                    txtBpm.setText(String.format(Locale.US, "%d BPM", valor));
 
                     TextView secondsAgo = new AppCompatTextView(EstatisticaActivity.this);
-                    secondsAgo.setPadding(26,26,26,26);
+                    secondsAgo.setPadding(26, 26, 26, 26);
                     secondsAgo.setTextSize(19.0f);
                     secondsAgo.setTextColor(Color.GRAY);
                     secondsAgo.setGravity(Gravity.END);
 
-                    DateTime hora = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss")
-                                                            .parseDateTime(ultimasPulsacoes.get(i).getHora());
-                    String horaFormatada = hora.getHourOfDay() + "h -" + (hora.getHourOfDay() + 1) + "h";
+                    String horaFormatada = horaInicio.getHourOfDay() + "h -" + horaFim.getHourOfDay() + "h";
                     secondsAgo.setText(horaFormatada);
 
                     row.addView(txtBpm);
                     row.addView(secondsAgo);
 
-                    tblPulsacoes.addView(row,i);
+                    tblPulsacoes.addView(row);
+
                 }
 
-            }
-
-            @Override
-            public void onFailure(Call<List<MediaEstatistica>> call, Throwable t) {
-                System.out.println("Erro ao buscar as pulsações");
-                ultimasPulsacoes = new ArrayList<>();
-            }
-        });
+                @Override
+                public void onFailure(Call<CloudantViewContainerDTO<Long>> call, Throwable t) {
+                    System.out.println("Erro ao buscar as pulsações");
+                }
+            });
+        }
 
     }
 
+    private void montaHeaderTabela() {
+        tblPulsacoes.removeAllViews();
 
+        TableRow headerRow = new TableRow(EstatisticaActivity.this);
+        headerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT));
+
+        TextView headerBpm = new AppCompatTextView(EstatisticaActivity.this);
+        headerBpm.setPadding(26, 26, 26, 26);
+        headerBpm.setTextSize(19.0f);
+        headerBpm.setTextColor(Color.BLACK);
+        headerBpm.setTypeface(null, Typeface.BOLD);
+        headerBpm.setText("Média");
+
+        TextView headerIntervalo = new AppCompatTextView(EstatisticaActivity.this);
+        headerIntervalo.setPadding(26, 26, 26, 26);
+        headerIntervalo.setTextSize(19.0f);
+        headerIntervalo.setTextColor(Color.BLACK);
+        headerIntervalo.setTypeface(null, Typeface.BOLD);
+        headerIntervalo.setGravity(Gravity.END);
+        headerIntervalo.setText("Intervalo");
+
+        headerRow.addView(headerBpm);
+        headerRow.addView(headerIntervalo);
+
+        tblPulsacoes.addView(headerRow);
+    }
 
     private void buscarDadosUsuario() {
 
-        Call<Usuario> endpointUsuario = estatisticaEndpointService.buscarDadosUsuario(login);
+        EstatisticaEndpointService service = RetrofitGenerator.createService(EstatisticaEndpointService.class);
+        Call<CloudantViewContainerDTO<Usuario>> endpointUsuario = service.buscarDadosUsuario("\"" + login + "\"");
 
-        endpointUsuario.enqueue(new Callback<Usuario>() {
+        endpointUsuario.enqueue(new Callback<CloudantViewContainerDTO<Usuario>>() {
             @Override
-            public void onResponse(Call<Usuario> call, Response<Usuario> response) {
+            public void onResponse(Call<CloudantViewContainerDTO<Usuario>> call, Response<CloudantViewContainerDTO<Usuario>> response) {
+                CloudantViewContainerDTO<Usuario> body = response.body();
+                if(body == null || body.getRows() == null || body.getRows().isEmpty()) {
+                    txtNome.setText("Usuário não encontrado");
+                    nrIdade.setText("Idade: ")  ;
+                    return;
+                }
 
-                usuario = response.body();
+                usuario = body.getRows().get(0).getValue();
 
                 txtNome.setText(usuario.getNome() );
                 nrIdade.setText("Idade: " + String.valueOf( usuario.getIdade() ) )  ;
@@ -175,7 +194,7 @@ public class EstatisticaActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<Usuario> call, Throwable t) {
+            public void onFailure(Call<CloudantViewContainerDTO<Usuario>> call, Throwable t) {
                 System.out.println("Erro ao buscar os dados do usuário");
             }
         });

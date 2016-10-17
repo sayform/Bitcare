@@ -33,6 +33,7 @@ import bitcare.com.br.bitcare.models.CloudantViewRowsDTO;
 import bitcare.com.br.bitcare.models.PulsacaoDTO;
 import bitcare.com.br.bitcare.utils.ConexaoStatusUtil;
 import bitcare.com.br.bitcare.utils.ConstantesUtils;
+import bitcare.com.br.bitcare.utils.DateTimeUtils;
 import bitcare.com.br.bitcare.utils.RetrofitGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -68,13 +69,9 @@ public class BpmActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         login = bundle.getString("login");
 
-
         // Inicializa o serviço do JodaTime para Android
         JodaTimeAndroid.init(this);
         ultimoRegistro = DateTime.now();
-
-//        pulsacaoDTOArrayAdapter = new ArrayAdapter<>(this,
-//                android.R.layout.simple_list_item_1, ultimasPulsacoes);
 
         montarListaBpms();
 
@@ -91,7 +88,7 @@ public class BpmActivity extends AppCompatActivity {
 
                 // Verifica se passaram alguns segundos desde o último registro para manter uma média coerente
                 if(DateTime.now().isAfter(ultimoRegistro.plusSeconds(2))) {
-                    String horaFormatada = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ").print(DateTime.now());
+                    String horaFormatada = DateTimeUtils.toString(DateTime.now());
                     ultimoRegistro = DateTime.now();
 
                     Long mediaBpms = extrairMediaBpms();
@@ -102,8 +99,6 @@ public class BpmActivity extends AppCompatActivity {
                     if(conectado) {
                         //registrarPulsacoesBanco();
                         registrarPulsacao(mediaBpms, horaFormatada);
-
-                    } else {
                     }
                 }
 
@@ -202,8 +197,7 @@ public class BpmActivity extends AppCompatActivity {
                     secondsAgo.setTextColor(Color.GRAY);
                     secondsAgo.setGravity(Gravity.END);
 
-                    DateTime hora = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-                                                    .parseDateTime(pulsacaoDTO.getHora());
+                    DateTime hora = DateTimeUtils.toDateTime(pulsacaoDTO.getHora());
                     String horaFormatada = DateUtils.getRelativeTimeSpanString(hora.getMillis()).toString();
                     secondsAgo.setText(horaFormatada);
 
@@ -217,7 +211,6 @@ public class BpmActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<CloudantViewContainerDTO<PulsacaoDTO>> call, Throwable t) {
                 System.out.println("não foi possível buscar as pulsações");
-                //ultimasPulsacoes = new ArrayList<>();
             }
         });
     }
